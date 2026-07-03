@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sayali Ingole — AI/ML &amp; Python Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e17;
+    --bg-alt:#0d1220;
+    --panel:rgba(255,255,255,0.045);
+    --panel-border:rgba(148,163,253,0.16);
+    --panel-border-hover:rgba(148,163,253,0.32);
+    --text:#e7e9f0;
+    --text-muted:#8b93a7;
+    --text-dim:#5c6579;
+    --cyan:#2dd4c8;
+    --violet:#b48cfd;
+    --grad:linear-gradient(120deg,var(--cyan),var(--violet));
+    --mono:'JetBrains Mono', monospace;
+    --display:'Space Grotesk', sans-serif;
+    --body:'Inter', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  body::before{
+    content:'';
+    position:fixed;inset:0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(45,212,200,0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(180,140,253,0.08), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  #netCanvas{
+    position:fixed;inset:0;z-index:0;opacity:0.5;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 6vw;
+    background:rgba(10,14,23,0.6);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .logo{
+    font-family:var(--mono);font-weight:600;font-size:15px;letter-spacing:0.5px;color:var(--text);
+    cursor:pointer; user-select:none;
+  }
+  .logo span{color:var(--cyan);}
+  .navlinks{display:flex;gap:6px;font-family:var(--mono);font-size:13px;}
+  .navlinks a{
+    color:var(--text-muted);text-decoration:none;padding:8px 14px;border-radius:8px;
+    transition:all .25s ease; position:relative;
+  }
+  .navlinks a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+  .navlinks a.active{color:var(--bg);background:var(--grad);}
+  .navToggle{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:110;}
+  .navToggle span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;}
+
+  @media(max-width:820px){
+    .navlinks{
+      position:fixed;top:0;right:0;height:100vh;width:min(72vw,300px);
+      background:rgba(10,14,23,0.97);backdrop-filter:blur(20px);
+      flex-direction:column;justify-content:center;align-items:flex-start;padding:40px;
+      transform:translateX(100%);transition:transform .35s ease;gap:4px;
+      border-left:1px solid rgba(255,255,255,0.08);
+    }
+    .navlinks.open{transform:translateX(0);}
+    .navlinks a{width:100%;padding:14px 10px;font-size:15px;}
+    .navToggle{display:flex;}
+  }
+
+  /* ---------- LAYOUT ---------- */
+  main{position:relative;z-index:1;}
+  .page{display:none;min-height:100vh;padding:130px 6vw 90px;max-width:1180px;margin:0 auto;}
+  .page.active{display:block;animation:fadeIn .6s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:12.5px;color:var(--cyan);letter-spacing:1.5px;
+    text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:'';width:22px;height:1px;background:var(--cyan);display:inline-block;}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.05;letter-spacing:-1px;}
+  h2{font-family:var(--display);font-weight:600;font-size:clamp(1.7rem,3.2vw,2.4rem);letter-spacing:-0.5px;margin-bottom:8px;}
+  h3{font-family:var(--display);font-weight:600;font-size:1.25rem;}
+  p{color:var(--text-muted);line-height:1.7;font-size:15.5px;}
+  .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  /* ---------- HOME ---------- */
+  .hero{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 60px);gap:26px;}
+  .terminal{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:14px;
+    padding:22px 26px;font-family:var(--mono);font-size:14px;max-width:560px;
+    box-shadow:0 20px 60px -30px rgba(0,0,0,0.6);
+  }
+  .terminal .dots{display:flex;gap:7px;margin-bottom:16px;}
+  .terminal .dots span{width:10px;height:10px;border-radius:50%;background:#333;}
+  .terminal .dots span:nth-child(1){background:#ef5350;}
+  .terminal .dots span:nth-child(2){background:#f5c542;}
+  .terminal .dots span:nth-child(3){background:#4caf50;}
+  .terminal .line{color:var(--text-dim);white-space:pre-wrap;}
+  .terminal .out{color:var(--cyan);}
+  .terminal .cursor{display:inline-block;width:8px;height:16px;background:var(--cyan);vertical-align:middle;animation:blink 1s step-end infinite;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .hero-sub{max-width:560px;font-size:17px;}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;}
+  .btn{
+    font-family:var(--mono);font-size:13.5px;padding:13px 24px;border-radius:9px;
+    text-decoration:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary{background:var(--grad);color:#05070c;font-weight:600;}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px -10px rgba(45,212,200,0.4);}
+  .btn-ghost{background:transparent;border:1px solid var(--panel-border);color:var(--text);}
+  .btn-ghost:hover{border-color:var(--panel-border-hover);transform:translateY(-2px);}
+
+  .stat-row{display:flex;gap:34px;flex-wrap:wrap;margin-top:20px;}
+  .stat b{font-family:var(--display);font-size:1.7rem;display:block;}
+  .stat span{font-family:var(--mono);font-size:11.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;}
+
+  /* ---------- CARDS ---------- */
+  .grid{display:grid;gap:20px;}
+  .card{
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;
+    padding:26px;transition:.3s ease; position:relative;overflow:hidden;
+  }
+  .card:hover{border-color:var(--panel-border-hover);transform:translateY(-3px);}
+  .card::after{
+    content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--grad);
+    transform:scaleX(0);transform-origin:left;transition:transform .35s ease;
+  }
+  .card:hover::after{transform:scaleX(1);}
+
+  .tag{
+    font-family:var(--mono);font-size:11.5px;color:var(--cyan);border:1px solid rgba(45,212,200,0.3);
+    padding:4px 10px;border-radius:100px;display:inline-block;background:rgba(45,212,200,0.06);
+  }
+  .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:50px;align-items:start;margin-top:40px;}
+  @media(max-width:800px){.about-grid{grid-template-columns:1fr;}}
+  .edu-card{margin-top:26px;}
+  .edu-card .row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;}
+  .cert-list{list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+  .cert-list li{
+    font-size:14px;color:var(--text-muted);padding-left:20px;position:relative;
+  }
+  .cert-list li::before{content:'▹';position:absolute;left:0;color:var(--violet);}
+
+  /* ---------- EXPERIENCE ---------- */
+  .timeline{margin-top:40px;display:flex;flex-direction:column;gap:0;}
+  .tl-item{
+    display:grid;grid-template-columns:150px 24px 1fr;gap:0;position:relative;
+  }
+  .tl-date{font-family:var(--mono);font-size:12.5px;color:var(--text-dim);padding-top:6px;}
+  .tl-node{display:flex;justify-content:center;position:relative;}
+  .tl-node::before{content:'';position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.1);}
+  .tl-item:first-child .tl-node::before{top:14px;}
+  .tl-item:last-child .tl-node::before{bottom:calc(100% - 14px);}
+  .tl-dot{width:11px;height:11px;border-radius:50%;background:var(--bg);border:2px solid var(--cyan);margin-top:6px;z-index:2;}
+  .tl-body{padding:0 0 46px 22px;}
+  .tl-body h3{margin-bottom:4px;}
+  .tl-body .org{font-family:var(--mono);font-size:12.5px;color:var(--violet);margin-bottom:10px;display:block;}
+  .tl-body ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+  .tl-body ul li{font-size:14.5px;color:var(--text-muted);padding-left:18px;position:relative;line-height:1.6;}
+  .tl-body ul li::before{content:'—';position:absolute;left:0;color:var(--text-dim);}
+  @media(max-width:640px){.tl-item{grid-template-columns:24px 1fr;}.tl-date{display:none;}}
+
+  /* ---------- PROJECTS ---------- */
+  .proj-grid{margin-top:40px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+  .proj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .proj-links{display:flex;gap:10px;margin-top:18px;}
+  .proj-links a{color:var(--text-muted);font-family:var(--mono);font-size:12.5px;text-decoration:none;border-bottom:1px solid transparent;}
+  .proj-links a:hover{color:var(--cyan);border-color:var(--cyan);}
+  .proj-flagship{grid-column:1/-1;background:linear-gradient(135deg, rgba(45,212,200,0.07), rgba(180,140,253,0.05));}
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid{margin-top:40px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
+  .skill-cat h3{font-size:1rem;margin-bottom:14px;color:var(--text);}
+  .skill-cat .tag-row{margin-top:0;}
+  .soft-skills{margin-top:50px;}
+  .soft-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-top:20px;}
+  .soft-grid .card{text-align:center;padding:20px 14px;}
+  .soft-grid .card p{font-family:var(--mono);font-size:12.5px;color:var(--text);margin:0;}
+
+  /* ---------- CONTACT ---------- */
+  .contact-wrap{display:grid;grid-template-columns:0.9fr 1.1fr;gap:50px;margin-top:40px;align-items:start;}
+  @media(max-width:800px){.contact-wrap{grid-template-columns:1fr;}}
+  .contact-info a{display:flex;align-items:center;gap:12px;color:var(--text);text-decoration:none;font-family:var(--mono);font-size:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .contact-info a:hover{color:var(--cyan);}
+  .icon-badge{width:34px;height:34px;border-radius:9px;background:var(--panel);border:1px solid var(--panel-border);display:flex;align-items:center;justify-content:center;font-size:15px;}
+
+  form{display:flex;flex-direction:column;gap:16px;}
+  label{font-family:var(--mono);font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block;}
+  input,textarea{
+    width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--panel-border);
+    border-radius:10px;padding:13px 15px;color:var(--text);font-family:var(--body);font-size:14.5px;
+    outline:none;transition:border-color .2s ease;
+  }
+  input:focus,textarea:focus{border-color:var(--cyan);}
+  textarea{resize:vertical;min-height:120px;}
+  .form-status{font-family:var(--mono);font-size:13px;min-height:18px;}
+  .form-status.ok{color:#4ade80;}
+  .form-status.err{color:#f87171;}
+
+  footer{
+    position:relative;z-index:1;text-align:center;padding:34px 6vw;
+    font-family:var(--mono);font-size:12px;color:var(--text-dim);
+    border-top:1px solid rgba(255,255,255,0.06);
+  }
+  footer span{color:var(--cyan);cursor:pointer;}
+
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
+  @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+
+  /* Admin panel (hidden, for message inbox) */
+  #adminPanel{
+    position:fixed;inset:0;z-index:200;background:rgba(6,8,13,0.92);backdrop-filter:blur(10px);
+    display:none;padding:60px 6vw;overflow:auto;
+  }
+  #adminPanel.open{display:block;}
+  #adminPanel .close-admin{position:absolute;top:24px;right:6vw;font-family:var(--mono);color:var(--text-muted);cursor:pointer;font-size:13px;}
+  #adminPanel .msg-card{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+  #adminPanel .msg-card .meta{font-family:var(--mono);font-size:11.5px;color:var(--text-dim);margin-bottom:8px;}
+  #adminPanel .msg-card p{color:var(--text);}
+</style>
+</head>
+<body>
+
+<canvas id="netCanvas"></canvas>
+
+<nav>
+  <div class="logo" onclick="goPage('home')">sayali<span>.dev</span></div>
+  <div class="navToggle" id="navToggle"><span></span><span></span><span></span></div>
+  <div class="navlinks" id="navlinks">
+    <a href="#home" data-page="home">Home</a>
+    <a href="#about" data-page="about">About</a>
+    <a href="#experience" data-page="experience">Experience</a>
+    <a href="#projects" data-page="projects">Projects</a>
+    <a href="#skills" data-page="skills">Skills</a>
+    <a href="#contact" data-page="contact">Contact</a>
+    <a href="Sayali_Ingole_Resume.pdf" target="_blank" rel="noopener" style="border:1px solid var(--panel-border);border-radius:8px;">Resume ↓</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HOME -->
+  <section class="page" id="page-home">
+    <div class="hero">
+      <div class="eyebrow">Final-year BCA · SGBAU Amravati</div>
+      <h1>Sayali Ingole builds<br><span class="grad-text">AI-driven software</span><br>that solves real problems.</h1>
+      <p class="hero-sub">Python developer focused on AI/ML and full-stack engineering — from training face-recognition models to shipping recruitment platforms that cut manual screening time by 70%.</p>
+
+      <div class="terminal">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="line">&gt;&gt;&gt; import sayali</div>
+        <div class="line">&gt;&gt;&gt; sayali.stack</div>
+        <div class="line out" id="typeTarget"></div>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#projects" onclick="goPage('projects')">View Projects →</a>
+        <a class="btn btn-ghost" href="#contact" onclick="goPage('contact')">Get in Touch</a>
+        <a class="btn btn-ghost" href="Sayali_Ingole_Resume.pdf" target="_blank" rel="noopener">Download Resume ↓</a>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><b>7.80</b><span>CGPA</span></div>
+        <div class="stat"><b>3</b><span>Internships</span></div>
+        <div class="stat"><b>70%</b><span>Screening time cut — SmartHire</span></div>
+        <div class="stat"><b>6</b><span>Certifications</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="page" id="page-about">
+    <div class="eyebrow">About</div>
+    <h2>The short version</h2>
+    <div class="about-grid">
+      <div>
+        <p>I'm a final-year BCA student at Sant Gadge Baba Amravati University, graduating May 2026, with hands-on experience across AI/ML, full-stack Java, and UI/UX through three internships. I like turning messy, manual processes into clean, working software — my flagship project, SmartHire, automates resume screening using Python and NLP.</p>
+        <br>
+        <p>Comfortable across the stack: Python (advanced), Java, Flask, MySQL/SQLite, and the OOP + SDLC fundamentals that make code maintainable rather than clever-for-its-own-sake. Currently deepening my AI/ML toolkit with LangChain, Hugging Face, and vector databases.</p>
+
+        <div class="soft-skills">
+          <div class="eyebrow" style="margin-top:0;">How I work</div>
+          <div class="grid soft-grid">
+            <div class="card"><p>Communication</p></div>
+            <div class="card"><p>Problem-Solving</p></div>
+            <div class="card"><p>Analytical Thinking</p></div>
+            <div class="card"><p>Teamwork</p></div>
+            <div class="card"><p>Adaptability</p></div>
+            <div class="card"><p>Time Management</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card edu-card">
+          <div class="eyebrow" style="margin-top:0;">Education</div>
+          <h3>Bachelor of Computer Application</h3>
+          <div class="row" style="margin-top:6px;">
+            <span style="color:var(--text-muted);font-size:14px;">Sant Gadge Baba Amravati University</span>
+            <span style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);">Jun 2023 – May 2026</span>
+          </div>
+          <div class="tag-row"><span class="tag">CGPA 7.80</span></div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="eyebrow" style="margin-top:0;">Certifications</div>
+          <ul class="cert-list">
+            <li>Python Certification — Elegant IT</li>
+            <li>Data Analytics — Deloitte</li>
+            <li>Cyber Security — Deloitte</li>
+            <li>Tally ERP — SGBAU</li>
+            <li>Web Development — Tamizhan Skills</li>
+            <li>AI and ML — Interns Studio</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="page" id="page-experience">
+    <div class="eyebrow">Experience</div>
+    <h2>Internships</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">Jun – Jul 2025</div>
+        <div class="tl-node"><div class="tl-dot"></div></div>
+        <div class="tl-body">
+          <h3>Full Stack Java Developer Intern</h3>
+          <span class="org">Upskill Campus</span>
+          <ul>
+            <li>Built a full-featured banking system with user authentication, account management, and transaction handling.</li>
+            <li>Implemented backend logic in Java with integrated database persistence.</li>
+            <li>Ensured secure, validated data handling across all modules.</li>
+          </ul>
+          <div class="tag-row"><span class="tag">Java</span><span class="tag">MySQL</span><span class="tag">HTML/CSS</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-date">Jan – Feb 2024</div>
+        <div class="tl-node"><div class="tl-dot"></div></div>
+        <div class="tl-body">
+          <h3>AI &amp; ML Intern</h3>
+          <span class="org">Interns Studio</span>
+          <ul>
+            <li>Developed a real-time Face Recognition System for identification and verification.</li>
+            <li>Implemented image processing and feature extraction using OpenCV and NumPy.</li>
+            <li>Trained and tuned ML models, improving detection accuracy through data preprocessing.</li>
+          </ul>
+          <div class="tag-row"><span class="tag">Python</span><span class="tag">OpenCV</span><span class="tag">NumPy</span></div>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-date">RISE Program</div>
+        <div class="tl-node"><div class="tl-dot"></div></div>
+        <div class="tl-body">
+          <h3>UI/UX Intern</h3>
+          <span class="org">Tamizhan Skills — RISE Internship Program</span>
+          <ul>
+            <li>Worked on interface design fundamentals and usability principles.</li>
+            <li>Applied design thinking to real project briefs alongside a peer cohort.</li>
+          </ul>
+          <div class="tag-row"><span class="tag">UI/UX</span><span class="tag">Design Thinking</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="page" id="page-projects">
+    <div class="eyebrow">Projects</div>
+    <h2>Things I've built</h2>
+    <div class="grid proj-grid">
+
+      <div class="card proj-flagship">
+        <div class="proj-head">
+          <div>
+            <span class="tag" style="margin-bottom:10px;display:inline-block;">Flagship</span>
+            <h3>SmartHire — Recruitment Management System</h3>
+          </div>
+        </div>
+        <p style="margin-top:12px;">A web-based recruitment platform that streamlines hiring by managing job postings, candidate applications, and resume screening. Backend logic in Python handles data processing and application flow, with a MySQL/SQLite layer storing candidate and job data — cutting manual resume screening effort by roughly 70%.</p>
+        <div class="tag-row">
+          <span class="tag">Python</span><span class="tag">Flask</span><span class="tag">MySQL/SQLite</span><span class="tag">NLP</span><span class="tag">REST APIs</span>
+        </div>
+        <div class="proj-links"><a href="https://github.com/Sayali283/SmartHire" target="_blank" rel="noopener">GitHub ↗</a></div>
+      </div>
+
+      <div class="card">
+        <h3>Face Recognition System</h3>
+        <p style="margin-top:10px;">Real-time facial identification and verification pipeline using computer vision and feature extraction, tuned for detection accuracy through iterative preprocessing.</p>
+        <div class="tag-row"><span class="tag">Python</span><span class="tag">OpenCV</span><span class="tag">NumPy</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Banking Information System</h3>
+        <p style="margin-top:10px;">A full-featured banking application covering authentication, account management, and transaction handling with a validated, secure backend.</p>
+        <div class="tag-row"><span class="tag">Java</span><span class="tag">MySQL</span></div>
+      </div>
+
+      <div class="card">
+        <h3>CafeClick</h3>
+        <p style="margin-top:10px;">A food ordering web app built to explore end-to-end flow — browsing, cart, and order handling — as part of independent full-stack practice.</p>
+        <div class="tag-row"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="page" id="page-skills">
+    <div class="eyebrow">Skills</div>
+    <h2>Toolbox</h2>
+    <div class="grid skills-grid">
+      <div class="card skill-cat">
+        <h3>Languages</h3>
+        <div class="tag-row">
+          <span class="tag">Python (Advanced)</span><span class="tag">Java</span><span class="tag">C++</span><span class="tag">C</span><span class="tag">R</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>AI / ML</h3>
+        <div class="tag-row">
+          <span class="tag">ML Fundamentals</span><span class="tag">OpenCV</span><span class="tag">NumPy</span><span class="tag">Pandas</span><span class="tag">NLP basics</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>Web &amp; Backend</h3>
+        <div class="tag-row">
+          <span class="tag">Flask</span><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span><span class="tag">REST APIs</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>Data</h3>
+        <div class="tag-row">
+          <span class="tag">MySQL</span><span class="tag">SQLite</span><span class="tag">Data Preprocessing</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>Core CS</h3>
+        <div class="tag-row">
+          <span class="tag">OOP</span><span class="tag">Data Structures</span><span class="tag">Algorithms</span><span class="tag">SDLC</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>Tools</h3>
+        <div class="tag-row">
+          <span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">VS Code</span><span class="tag">Excel</span><span class="tag">Canva</span>
+        </div>
+      </div>
+      <div class="card skill-cat">
+        <h3>Currently learning</h3>
+        <div class="tag-row">
+          <span class="tag">LangChain</span><span class="tag">Hugging Face</span><span class="tag">ChromaDB</span><span class="tag">Docker</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="page" id="page-contact">
+    <div class="eyebrow">Contact</div>
+    <h2>Let's talk</h2>
+    <p style="max-width:520px;">Open to entry-level roles in AI/ML engineering, Python development, and full-stack development. Reach out directly or send a message below.</p>
+
+    <div class="contact-wrap">
+      <div class="contact-info">
+        <a href="mailto:ingolesayali283@gmail.com"><span class="icon-badge">✉</span> ingolesayali283@gmail.com</a>
+        <a href="tel:+917020304303"><span class="icon-badge">☎</span> +91 7020304303</a>
+        <a href="https://www.linkedin.com/in/sayali-ingole-bb0ab3295" target="_blank" rel="noopener"><span class="icon-badge">in</span> linkedin.com/in/sayali-ingole</a>
+        <a href="https://github.com/Sayali283" target="_blank" rel="noopener"><span class="icon-badge">gh</span> github.com/Sayali283</a>
+        <a><span class="icon-badge">📍</span> Yavatmal, Maharashtra, India</a>
+      </div>
+
+      <form id="contactForm">
+        <div>
+          <label for="cf-name">Name</label>
+          <input id="cf-name" name="name" type="text" required placeholder="Your name">
+        </div>
+        <div>
+          <label for="cf-email">Email</label>
+          <input id="cf-email" name="email" type="email" required placeholder="you@example.com">
+        </div>
+        <div>
+          <label for="cf-message">Message</label>
+          <textarea id="cf-message" name="message" required placeholder="What's this about?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Send Message →</button>
+        <div class="form-status" id="formStatus"></div>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © 2026 Sayali Ingole — built with Python-brain and HTML hands. <span onclick="openAdmin()">•</span>
+</footer>
+
+<div id="adminPanel">
+  <div class="close-admin" onclick="closeAdmin()">Close ✕</div>
+  <div class="eyebrow">Admin</div>
+  <h2>Inbox</h2>
+  <p style="margin-bottom:24px;">Messages submitted through the contact form (stored via this artifact's persistent storage).</p>
+  <div id="msgList"></div>
+</div>
+
+<script>
+  /* ---------------- ROUTING ---------------- */
+  const pages = ['home','about','experience','projects','skills','contact'];
+  function goPage(name){
+    if(!pages.includes(name)) name = 'home';
+    pages.forEach(p=>{
+      document.getElementById('page-'+p).classList.toggle('active', p===name);
+    });
+    document.querySelectorAll('.navlinks a').forEach(a=>{
+      a.classList.toggle('active', a.dataset.page===name);
+    });
+    document.getElementById('navlinks').classList.remove('open');
+    window.scrollTo({top:0,behavior:'instant' in window ? 'instant':'auto'});
+    if(location.hash !== '#'+name) history.replaceState(null,'','#'+name);
+  }
+  document.querySelectorAll('.navlinks a').forEach(a=>{
+    a.addEventListener('click', e=>{ e.preventDefault(); goPage(a.dataset.page); });
+  });
+  window.addEventListener('hashchange', ()=> goPage(location.hash.replace('#','')) );
+  goPage(location.hash.replace('#','') || 'home');
+
+  document.getElementById('navToggle').addEventListener('click', ()=>{
+    document.getElementById('navlinks').classList.toggle('open');
+  });
+
+  /* ---------------- TERMINAL TYPE EFFECT ---------------- */
+  const skillsLine = "'Python · Flask · AI/ML · NLP · MySQL'";
+  const typeTarget = document.getElementById('typeTarget');
+  let ti = 0;
+  function typeLoop(){
+    if(ti <= skillsLine.length){
+      typeTarget.innerHTML = skillsLine.slice(0,ti) + '<span class="cursor"></span>';
+      ti++;
+      setTimeout(typeLoop, 38);
+    } else {
+      typeTarget.innerHTML = skillsLine + '<span class="cursor"></span>';
+    }
+  }
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduceMotion){ typeTarget.innerHTML = skillsLine; } else { typeLoop(); }
+
+  /* ---------------- NETWORK CANVAS BG ---------------- */
+  const canvas = document.getElementById('netCanvas');
+  const ctx = canvas.getContext('2d');
+  let W,H,nodes=[];
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  function initNodes(){
+    const count = Math.min(70, Math.floor(W*H/22000));
+    nodes = Array.from({length:count},()=>({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25
+    }));
+  }
+  function drawNet(){
+    ctx.clearRect(0,0,W,H);
+    for(const n of nodes){
+      n.x += n.vx; n.y += n.vy;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+    }
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a=nodes[i], b=nodes[j];
+        const d = Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<130){
+          ctx.strokeStyle = 'rgba(45,212,200,'+(0.14*(1-d/130))+')';
+          ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    for(const n of nodes){
+      ctx.fillStyle='rgba(180,140,253,0.55)';
+      ctx.beginPath(); ctx.arc(n.x,n.y,1.6,0,Math.PI*2); ctx.fill();
+    }
+    if(!reduceMotion) requestAnimationFrame(drawNet);
+  }
+  resize(); initNodes();
+  if(!reduceMotion){ drawNet(); } else {
+    // draw a single static frame
+    drawNet_static: {
+      for(let i=0;i<nodes.length;i++){
+        for(let j=i+1;j<nodes.length;j++){
+          const a=nodes[i], b=nodes[j];
+          const d = Math.hypot(a.x-b.x,a.y-b.y);
+          if(d<130){
+            ctx.strokeStyle = 'rgba(45,212,200,'+(0.14*(1-d/130))+')';
+            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+  window.addEventListener('resize', ()=>{ resize(); initNodes(); });
+
+  /* ---------------- CONTACT FORM ---------------- */
+  const contactForm = document.getElementById('contactForm');
+  const formStatus = document.getElementById('formStatus');
+
+  contactForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const message = document.getElementById('cf-message').value.trim();
+    if(!name || !email || !message){
+      formStatus.textContent = 'Please fill in every field.';
+      formStatus.className = 'form-status err';
+      return;
+    }
+    formStatus.textContent = 'Sending…';
+    formStatus.className = 'form-status';
+
+    const entry = { name, email, message, ts: new Date().toISOString() };
+
+    // 1) Save into this page's persistent storage (visible in the Inbox panel below).
+    try{
+      const key = 'contact:'+Date.now();
+      if(window.storage){
+        await window.storage.set(key, JSON.stringify(entry), true);
+      }
+    }catch(err){ console.warn('local storage save failed', err); }
+
+    // 2) Try Formspree first (replace YOUR_FORM_ID once you sign up at formspree.io).
+    const FORMSPREE_ID = 'YOUR_FORM_ID';
+    let delivered = false;
+    if(FORMSPREE_ID !== 'YOUR_FORM_ID'){
+      try{
+        const res = await fetch('https://formspree.io/f/'+FORMSPREE_ID, {
+          method:'POST',
+          headers:{'Accept':'application/json'},
+          body: new FormData(contactForm)
+        });
+        delivered = res.ok;
+      }catch(err){ delivered = false; }
+    }
+
+    if(delivered){
+      formStatus.textContent = 'Message sent — thank you!';
+      formStatus.className = 'form-status ok';
+      contactForm.reset();
+    } else {
+      // 3) Fallback: open the visitor's email client pre-filled, so the message still reaches you.
+      const subject = encodeURIComponent('Portfolio message from '+name);
+      const body = encodeURIComponent(message+'\n\n— '+name+' ('+email+')');
+      window.location.href = 'mailto:ingolesayali283@gmail.com?subject='+subject+'&body='+body;
+      formStatus.textContent = 'Saved here — also opening your email app to send it directly.';
+      formStatus.className = 'form-status ok';
+      contactForm.reset();
+    }
+  });
+
+  /* ---------------- ADMIN INBOX ---------------- */
+  async function openAdmin(){
+    document.getElementById('adminPanel').classList.add('open');
+    const list = document.getElementById('msgList');
+    list.innerHTML = '<p>Loading…</p>';
+    try{
+      if(!window.storage){ list.innerHTML = '<p>Storage not available in this environment.</p>'; return; }
+      const res = await window.storage.list('contact:', true);
+      const keys = (res && res.keys) ? res.keys : [];
+      if(!keys.length){ list.innerHTML = '<p>No messages yet.</p>'; return; }
+      const items = [];
+      for(const k of keys){
+        try{
+          const r = await window.storage.get(k, true);
+          if(r && r.value) items.push(JSON.parse(r.value));
+        }catch(e){}
+      }
+      items.sort((a,b)=> new Date(b.ts) - new Date(a.ts));
+      list.innerHTML = items.map(m=>`
+        <div class="msg-card">
+          <div class="meta">${new Date(m.ts).toLocaleString()} — ${m.name} &lt;${m.email}&gt;</div>
+          <p>${m.message.replace(/</g,'&lt;')}</p>
+        </div>
+      `).join('');
+    }catch(err){
+      list.innerHTML = '<p>Could not load messages.</p>';
+    }
+  }
+  function closeAdmin(){ document.getElementById('adminPanel').classList.remove('open'); }
+</script>
+
+</body>
+</html>
